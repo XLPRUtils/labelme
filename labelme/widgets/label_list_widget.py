@@ -33,8 +33,10 @@ class HTMLDelegate(QtWidgets.QStyledItemDelegate):
         if option.state & QStyle.State_Selected:
             ctx.palette.setColor(
                 QPalette.Text,
+                # HighlightedText不直观，改成另一种高亮格式
                 option.palette.color(
-                    QPalette.Active, QPalette.HighlightedText
+                    # QPalette.Active, QPalette.HighlightedText
+                    QPalette.Active, QPalette.Highlight
                 ),
             )
         else:

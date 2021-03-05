@@ -291,7 +291,7 @@ class MainWindow(QtWidgets.QMainWindow):
             slot=self.enableSaveImageWithData,
             tip="Save image data in label file",
             checkable=True,
-            checked=self._config["store_data"],
+            checked=False,
         )
 
         close = action(
@@ -1097,11 +1097,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions.copy.setEnabled(n_selected)
         self.actions.edit.setEnabled(n_selected == 1)
 
+    @classmethod
+    def extendShapeMessage(cls, shape):
+        """ shape中自定义字段等信息
+
+        :param shape: shape对象
+        :return: 格式化的字符串内容
+        """
+        # 只考虑other_data中的数据
+        datas = shape.other_data
+        # 去掉扩展的颜色功能
+        keys = datas.keys() - {'shape_color', 'line_color', 'vertex_fill_color', 'hvertex_fill_color',
+                               'fill_color', 'select_line_color', 'select_fill_color'}
+        msgs = [f'{k}={datas[k]}' for k in sorted(keys)]
+        return ', '.join(msgs)
+
     def addLabel(self, shape):
         if shape.group_id is None:
             text = shape.label
         else:
             text = "{} ({})".format(shape.label, shape.group_id)
+        extend_message = self.extendShapeMessage(shape)
+        if extend_message: text += ' ' + extend_message
+
         label_list_item = LabelListWidgetItem(text, shape)
         self.labelList.addItem(label_list_item)
         if not self.uniqLabelList.findItemsByLabel(shape.label):
@@ -1229,7 +1247,7 @@ class MainWindow(QtWidgets.QMainWindow):
             data.update(
                 dict(
                     label=s.label.encode("utf-8") if PY2 else s.label,
-                    points=[(p.x(), p.y()) for p in s.points],
+                    points=[(round(p.x(), 2), round(p.y(), 2)) for p in s.points],
                     group_id=s.group_id,
                     shape_type=s.shape_type,
                     flags=s.flags,
